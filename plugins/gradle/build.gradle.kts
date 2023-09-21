@@ -9,6 +9,8 @@ dependencies {
     implementation(gradleApi())
 
     implementation(project(":core"))
+
+    testImplementation("uk.org.webcompere:model-assert:1.0.0")
 }
 
 sourceSets {

@@ -1,12 +1,16 @@
 package io.datapith.jayOverlay.gradle.plugin
 
 import java.io.File
+import java.nio.file.Paths
+import mu.two.KotlinLogging
 import org.gradle.testkit.runner.GradleRunner
 import org.junit.Before
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
+import uk.org.webcompere.modelassert.json.JsonAssertions.assertJson
 
 class JayOverlayTest {
+    private val logger = KotlinLogging.logger {}
 
     // creates temp directory for a gradle project
     private val testProjectDir = TemporaryFolder()
@@ -19,18 +23,22 @@ class JayOverlayTest {
 
     @Before
     fun setup() {
+
         testProjectDir.create()
 
         // Create yaml file for testing overlay
-        targetFile = testProjectDir.newFile("targetFile.yml")
+        targetFile = testProjectDir.newFile("targetFile.json")
         targetFile.writeText(
             """
-                openapi: "3.0.0"
-                info:
-                  version: "1.0.0"
-                  title: "API"
-                paths: {}            
-                """
+                 {
+                    "openapi": "3.0.0",
+                    "info": {
+                        "version": "1.0.0",
+                        "title": "API"
+                    },
+                    "paths": {}
+                 }           
+                 """
         )
 
         overlayFile = testProjectDir.newFile("overlayFile.json")
@@ -74,6 +82,9 @@ class JayOverlayTest {
             }
             
             jayOverlay {
+                targetFile.set("${targetFile.path}")
+                overlayFile.set("${overlayFile.path}")
+                outputDir.set("${testProjectDir.root.path}/result")
             }
             """.trimIndent()
         )
@@ -95,15 +106,33 @@ class JayOverlayTest {
     }
 
     @Test
-    fun `apply overlay to yaml file`() {
-        val result = gradleRunner
+    fun `apply overlay to json file`() {
+        val outputBuild = gradleRunner
             //.withDebug(true)
             .withArguments(
                 "--i",
-                "applyOverlay",
-                "--targetFile", targetFile.path,
-                "--overlayFile", overlayFile.path)
+                "applyOverlay"
+            )
             .build()
-        println(result.output)
+
+        // Get overlay file and compare to expected result
+        val result = Paths.get(testProjectDir.toString(), targetFile.name).toFile().readText()
+        assertJson(result).isEqualToYaml(
+            """
+                openapi: "3.0.0"
+                info:
+                  version: "1.0.0"
+                  title: "API"
+                paths: 
+                    /list:
+                        get:
+                            description: Returns a list of stuff              
+                            responses:
+                                "200":
+                                    description: Successful response                            
+            """
+        )
+
+        println(outputBuild.output)
     }
 }
