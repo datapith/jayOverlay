@@ -1,0 +1,664 @@
+openapi: 3.0.0
+info:
+  description: Endpoints exposed by Merchant
+  title: API Merchant generic
+  version: '2.5.3'
+servers:
+  - url: /
+paths:
+  /transaction-result:
+    post:
+      description: "Merchant endpoint to receive payment/debt recovery/refund results.\
+        \ Payment, debt recovery and refund requests will be handled asynchronously\
+        \ and this API will be used as the callback endpoint"
+      parameters:
+        - in: header
+          name: X-B3-TraceId
+          schema:
+            type: string
+        - in: header
+          name: X-B3-SpanId
+          schema:
+            type: string
+        - in: header
+          name: X-B3-ParentSpanId
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            examples:
+              requestBody:
+                summary: Example of JSON Transaction result
+                value: |
+                  {
+                    "type": "PAYMENT",
+                    "outcome": "ISSUER_APPROVED",
+                    "requiredAction": "NONE",
+                    "requestId": "0c345ba5-4105-417e-9fb9-80b1ad44521f",
+                    "amount": "35",
+                    "currency": 752,
+                    "card": {
+                      "maskedPan": "7907",
+                      "scheme": "MASTERCARD",
+                      "expiry": "2809",
+                      "paymentCardReference": "f4a15ff5-39eb-44c6-a39e-3981e3d21c7b",
+                      "travelerAccountReference": "2c639955-5f43-4e91-a3cb-9e2af9c33c38",
+                      "sequenceNumber": 0,
+                      "paymentAccountReference": "50012ILDX2L26T5CUNNN2UFWJQXLR"
+                    },
+                    "acquirerTx": {
+                      "id": "ELAVON",
+                      "responseCode": "0",
+                      "txDateTime": "2023-09-13T13:16:12.000+00:00",
+                      "mid": "2101935353     ",
+                      "tid": "1",
+                      "stan": "31081",
+                      "rrn": "000000**5971"
+                    },
+                    "taps": [
+                      "191c1c5a-81a4-4aa6-8d6b-a5750312a677"
+                    ]
+                  }
+            schema:
+              $ref: '#/components/schemas/TransactionResponse'
+        required: true
+      responses:
+        "200":
+          description: Successful Operation
+        "400":
+          description: Invalid request
+        "500":
+          description: Merchant API error
+      summary: API for receiving payment/debt recovery/refund results
+      tags:
+        - Merchant
+  /tap:
+    post:
+      description: $ref "../../description.yml"
+      parameters:
+        - in: header
+          name: X-B3-TraceId-test
+          schema:
+            type: string
+        - in: header
+          name: X-B3-SpanId
+          schema:
+            type: string
+        - in: header
+          name: X-B3-ParentSpanId
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Tap'
+        required: true
+      responses:
+        "200":
+          description: Successful Operation
+        "400":
+          description: Invalid request
+        "500":
+          description: Merchant API error
+      summary: API for receiving tap events
+      tags:
+        - Merchant
+  /list-event:
+    post:
+      description: Receives notification messages for list events
+      parameters:
+        - in: header
+          name: X-B3-TraceId
+          schema:
+            type: string
+        - in: header
+          name: X-B3-SpanId
+          schema:
+            type: string
+        - in: header
+          name: X-B3-ParentSpanId
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ArrayOfListNotifications'
+        required: true
+      responses:
+        "200":
+          description: Successful Operation
+        "400":
+          description: Invalid request
+        "500":
+          description: Merchant API error
+      summary: API for receiving list related events
+      tags:
+        - Merchant
+components:
+  parameters:
+    traceId:
+      in: header
+      name: X-B3-TraceId-test
+      schema:
+        type: string
+    spanId:
+      in: header
+      name: X-B3-SpanId
+      schema:
+        type: string
+    parentSpanId:
+      in: header
+      name: X-B3-ParentSpanId
+      schema:
+        type: string
+  schemas:
+    TransactionResponse:
+      description: "Response for any payment/debt recovery/refund request. `requestId`\
+        \ matches the `PaymentRequest.requestId`, `DebtRecoveryRequest.requestId`\
+        \ or `RefundRequest.requestId`."
+      example:
+        amount: 80.4
+        outcomeReason: outcomeReason
+        requestId: dr-request-1
+        taps:
+          - 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          - 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        currency: 752
+        acquirerTx:
+          authCode: "111111111"
+          stan: "000012"
+          mid: "290007020"
+          id: ELAVON
+          tid: "00000001"
+          responseCode: "000"
+          txDateTime: 2023-07-27T10:15:06.638+02:00
+          rrn: "999999999999"
+        type: DEBT_RECOVERY
+        message: Request succeeded
+        requiredAction: DEBT_RECOVERY
+        card:
+          sequenceNumber: 1
+          paymentAccountReference: 500103DMKZ9VHG9ILSR8I6SL2IZ5R
+          paymentCardReference: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          travelerAccountReference: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          fundingPaymentCardReference: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          maskedPan: maskedPan
+          scheme: null
+          paymentApp: Apple Pay
+          ntsToken: ntsToken
+          mediaType: PAYMENT_TOKEN
+          expiry: "2611"
+        outcome: null
+      properties:
+        type:
+          $ref: '#/components/schemas/RequestType'
+        requestId:
+          description: "Echo of the `PaymentRequest.requestId`, `DebtRecoveryRequest.requestId`\
+            \ or `RefundRequest.requestId` field. This field is null when a 'debt\
+            \ recovery has been started' notification is triggered because of an unhealthy\
+            \ card health check"
+          example: dr-request-1
+          type: string
+        amount:
+          description: Transaction amount
+          example: 80.4
+          type: number
+        currency:
+          description: ISO 4217 currency code
+          example: 752
+          type: integer
+        card:
+          $ref: '#/components/schemas/CardInformation'
+        message:
+          description: Description of the outcome
+          example: Request succeeded
+          nullable: false
+          type: string
+        outcome:
+          $ref: '#/components/schemas/TransactionOutcome'
+        outcomeReason:
+          description: Detailed information transaction outcome
+          type: string
+        acquirerTx:
+          $ref: '#/components/schemas/AcquirerTx'
+        requiredAction:
+          description: "* `DEBT_RECOVERY` => attempt debt recovery. Used, in case\
+            \ where the payment or debt recovery request was declined by the issuer\
+            \ for temporary card-related reasons, \n* `RETRY` => retry the previous\
+            \ request unchanged. Used, in the cases where a payment or debt recovery\
+            \ failed due to temporary environmental problems such as the issuer or\
+            \ acquirer being unreachable, \n* `NONE` => No further action should be\
+            \ attempted (will not succeed), \n* `CONTACT_SUPPORT` => Some unrecoverable\
+            \ error happened, contact support for further assistance\n"
+          enum:
+            - DEBT_RECOVERY
+            - RETRY
+            - NONE
+            - CONTACT_SUPPORT
+          type: string
+        taps:
+          description: List of taps associated with payment/debt recovery
+          items:
+            format: uuid
+            type: string
+          type: array
+      required:
+        - outcome
+        - requiredAction
+        - type
+      type: object
+    Tap:
+      description: Tap sent from Vayapay to merchant. Vayapay will make sure that
+        the information sent here is not in PCI-DSS scope.
+      example:
+        atc: 67
+        journey:
+          txId: 37b8d8fb-affb-46b8-b908-a3e47009eadb
+          from: A
+          to: B
+          timestamp: 2023-07-27T10:15:06.638+02:00
+          validatorId: 01PEFTG-100-5116-01
+        poiOutcome: ACCEPTED
+        health:
+          healthCheckOutcome: null
+          requiredAction: PAYMENT
+          responseCode: "100"
+        terminalId: TERMINAL001
+        tapId: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        card:
+          sequenceNumber: 1
+          paymentAccountReference: 500103DMKZ9VHG9ILSR8I6SL2IZ5R
+          paymentCardReference: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          travelerAccountReference: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          fundingPaymentCardReference: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          maskedPan: maskedPan
+          scheme: null
+          paymentApp: Apple Pay
+          ntsToken: ntsToken
+          mediaType: PAYMENT_TOKEN
+          expiry: "2611"
+      properties:
+        tapId:
+          description: Unique tap id
+          format: uuid
+          nullable: false
+          type: string
+        atc:
+          description: "Card Application Transaction Counter, can be used to order\
+            \ taps"
+          example: 67
+          nullable: false
+          type: integer
+        terminalId:
+          example: TERMINAL001
+          nullable: false
+          type: string
+        poiOutcome:
+          enum:
+            - ACCEPTED
+            - ACCEPTED_IN_CONCESSION
+            - CARD_NOT_MANAGED
+            - CARD_EXPIRED
+            - CARD_IN_DENY_LIST
+            - CARD_AUTH_FAILED
+            - CVM_ERROR
+            - ANTI_PASSBACK
+            - TX_CANCELLED
+            - ERROR
+            - AID_NOT_SUPPORTED
+          nullable: false
+          type: string
+        card:
+          $ref: '#/components/schemas/CardInformation'
+        journey:
+          description: Journey specific information for the merchant. The journey
+            information is passed as a blob containing the journey information as
+            received from the terminal.
+          example:
+            txId: 37b8d8fb-affb-46b8-b908-a3e47009eadb
+            from: A
+            to: B
+            timestamp: 2023-07-27T10:15:06.638+02:00
+            validatorId: 01PEFTG-100-5116-01
+          type: object
+        health:
+          $ref: '#/components/schemas/HealthCheck'
+      required:
+        - journey
+        - poiOutcome
+        - tapId
+        - terminalId
+      type: object
+    ArrayOfListNotifications:
+      description: There may be multiple list events for a single request when PAR
+        or TAR is specified in the request.
+      example:
+        notifications:
+          - requestId: bl-request-1
+            action: null
+            message: Added by merchant
+            listType: null
+            card:
+              sequenceNumber: 1
+              paymentAccountReference: 500103DMKZ9VHG9ILSR8I6SL2IZ5R
+              paymentCardReference: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+              travelerAccountReference: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+              fundingPaymentCardReference: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+              maskedPan: maskedPan
+              scheme: null
+              paymentApp: Apple Pay
+              ntsToken: ntsToken
+              mediaType: PAYMENT_TOKEN
+              expiry: "2611"
+          - requestId: bl-request-1
+            action: null
+            message: Added by merchant
+            listType: null
+            card:
+              sequenceNumber: 1
+              paymentAccountReference: 500103DMKZ9VHG9ILSR8I6SL2IZ5R
+              paymentCardReference: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+              travelerAccountReference: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+              fundingPaymentCardReference: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+              maskedPan: maskedPan
+              scheme: null
+              paymentApp: Apple Pay
+              ntsToken: ntsToken
+              mediaType: PAYMENT_TOKEN
+              expiry: "2611"
+      properties:
+        notifications:
+          items:
+            $ref: '#/components/schemas/ListNotification'
+          type: array
+      type: object
+    RequestType:
+      description: Specifies the type of the request
+      enum:
+        - LIST_MANAGEMENT
+        - DEBT_RECOVERY
+        - PAYMENT
+        - REFUND
+      example: DEBT_RECOVERY
+      nullable: false
+      type: string
+    CardInformation:
+      description: Tokenized card information
+      example:
+        sequenceNumber: 1
+        paymentAccountReference: 500103DMKZ9VHG9ILSR8I6SL2IZ5R
+        paymentCardReference: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        travelerAccountReference: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        fundingPaymentCardReference: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        maskedPan: maskedPan
+        scheme: null
+        paymentApp: Apple Pay
+        ntsToken: ntsToken
+        mediaType: PAYMENT_TOKEN
+        expiry: "2611"
+      properties:
+        maskedPan:
+          description: Masked PAN for customers convenience
+          pattern: "\\d{4}$"
+          type: string
+        scheme:
+          $ref: '#/components/schemas/CardScheme'
+        expiry:
+          description: Expiry date of the card YYMM format
+          example: "2611"
+          pattern: "^[0-9]{2}((0[1-9])|(1[0-2]))$"
+          type: string
+        sequenceNumber:
+          description: Card sequence number
+          example: 1
+          maximum: 999
+          minimum: 0
+          type: integer
+        paymentCardReference:
+          description: Vayapay unique card identifier of the card
+          format: uuid
+          type: string
+        travelerAccountReference:
+          description: Vayapay unique traveler identifier (TAR) different card with
+            same funding PAN or Payment Account Reference will have the same traveler
+            account reference
+          format: uuid
+          type: string
+        paymentAccountReference:
+          description: Payment Account Reference (PAR) of the card if provided by
+            the acquirer
+          example: 500103DMKZ9VHG9ILSR8I6SL2IZ5R
+          type: string
+        fundingPaymentCardReference:
+          description: Vayapay unique card identifier of the funding PAN if exists
+          format: uuid
+          type: string
+        mediaType:
+          description: Indicates if the payment card or any payment token was tapped
+          enum:
+            - CARD
+            - PAYMENT_TOKEN
+          example: PAYMENT_TOKEN
+          type: string
+        paymentApp:
+          description: Payment application indicator if a payment token was tapped
+          example: Apple Pay
+          type: string
+        ntsToken:
+          description: N&TS token for the card
+          type: string
+      required:
+        - expiry
+        - maskedPan
+        - paymentCardReference
+        - scheme
+        - travelerAccountReference
+      type: object
+    TransactionOutcome:
+      description: |
+        Outcome of the response to a payment/debt-recovery/refund request.
+
+        * FAILURE => Transaction failed (to be migrated between ISSUER_DECLINED_TEMPORARY, ISSUER_DECLINED_PERMANENT and TEMPORARY_ENVIRONMENTAL_FAILURE),
+        * NOT_ALLOWED => Debt recovery is not allowed because the minimum interval between retries was not respected (for example 24hs),
+        * CANCELLED => Transaction is not performed because a validation failed. For example, the taps sent are not valid or are already linked to a finished payment. (To be migrated to INVALID_TRANSACTION_REQUEST + outcomeReason),
+        * INVALID_TRANSACTION_REQUEST => Transaction is not performed because a validation failed. Validation reason available in field outcomeReason,
+        * HEALTH_CHECK_IN_PROGRESS => Health check is in progress for this card, no new transaction is allowed yet,
+        * PAYMENT_IN_PROGRESS => Payment request is in progress for this card, no new transaction is allowed yet,
+        * DEBT_RECOVERY_IN_PROGRESS => Debt recovery is in progress for this card, no new transaction is allowed yet,
+        * DEBT_RECOVERY_EXPIRED => The amount of time where the debt recovery could be done has expired,
+        * DEBT_RECOVERY_EXHAUSTED => Debt recovery amount of retries exceeded, the debt cannot longer be retried,
+        * ISSUER_APPROVED => approved by the card issuer,
+        * ISSUER_DECLINED_TEMPORARY => denied by the card issuer due to temporary card-related issues such as insufficient funds to cover the requested amount. responseCode is sent in this case indicating the reason for the decline,
+        * ISSUER_DECLINED_PERMANENT => denied by the card issuer due to permanent card-related issues such as the card having been reported as stolen. responseCode is sent in this case indicating the reason for the decline,
+        * TEMPORARY_ENVIRONMENTAL_FAILURE => failed due to a temporary environmental problem such as the acquirer or issuer being unreachable,
+        * CANCELLED_BY_MERCHANT => cancelled by merchant (confirmation of successful cancellation),
+      enum:
+        - FAILURE
+        - NOT_ALLOWED
+        - CANCELLED
+        - HEALTH_CHECK_IN_PROGRESS
+        - PAYMENT_IN_PROGRESS
+        - DEBT_RECOVERY_IN_PROGRESS
+        - DEBT_RECOVERY_EXPIRED
+        - DEBT_RECOVERY_EXHAUSTED
+        - ISSUER_APPROVED
+        - ISSUER_DECLINED_TEMPORARY
+        - ISSUER_DECLINED_PERMANENT
+        - TEMPORARY_ENVIRONMENTAL_FAILURE
+        - CANCELLED_BY_MERCHANT
+        - INVALID_TRANSACTION_REQUEST
+      nullable: false
+      type: string
+    AcquirerTx:
+      example:
+        authCode: "111111111"
+        stan: "000012"
+        mid: "290007020"
+        id: ELAVON
+        tid: "00000001"
+        responseCode: "000"
+        txDateTime: 2023-07-27T10:15:06.638+02:00
+        rrn: "999999999999"
+      properties:
+        id:
+          description: Acquirer id as configured in Vayapay platform
+          example: ELAVON
+          type: string
+        responseCode:
+          description: Response code received from the acquirer
+          example: "000"
+          type: string
+        authCode:
+          description: Authentication code received from the acquirer
+          example: "111111111"
+          type: string
+        txDateTime:
+          description: Date time when the transaction is processed with the acquirer.
+            Format of the timestamp is yyyy-MM-dd'T'HH:mm:ss.SSSxxx
+          example: 2023-07-27T10:15:06.638+02:00
+          pattern: "^\\d{4}-(?:0[1-9]|1[0-2])-(?:[0-2][1-9]|[1-3]0|3[01])T(?:[0-1][0-9]|2[0-3])(?::[0-5]\\\
+            d)(?::[0-5]\\d)(?:\\.\\d{3})(?:[+-][0-2]\\d:[0-5]\\d)"
+          type: string
+        mid:
+          description: Merchant id with the acquirer
+          example: "290007020"
+          type: string
+        tid:
+          description: Terminal id with the acquirer
+          example: "00000001"
+          type: string
+        stan:
+          description: System Trace Audit Number
+          example: "000012"
+          type: string
+        rrn:
+          description: Retrieval Reference Number
+          example: "999999999999"
+          type: string
+      type: object
+    JourneyInformation:
+      description: Journey specific information for the merchant. The journey information
+        is passed as a blob containing the journey information as received from the
+        terminal.
+      example:
+        txId: 37b8d8fb-affb-46b8-b908-a3e47009eadb
+        from: A
+        to: B
+        timestamp: 2023-07-27T10:15:06.638+02:00
+        validatorId: 01PEFTG-100-5116-01
+      type: object
+    HealthCheck:
+      description: Card health check information. If health check information is missing
+        the requiredAction is PAYMENT.
+      example:
+        healthCheckOutcome: null
+        requiredAction: PAYMENT
+        responseCode: "100"
+      properties:
+        healthCheckOutcome:
+          $ref: '#/components/schemas/HealthCheckOutcome'
+        responseCode:
+          description: ISO-8583 response code that was received from the card issuer
+          example: "100"
+          type: string
+        requiredAction:
+          description: "PAYMENT => proceed to requesting payment, DEBT_RECOVERY =>\
+            \ attempt debt recovery. Used, in case where the health check was declined\
+            \ by the issuer for temporary card-related reasons, NONE => No further\
+            \ action should be attempted (will not succeed)"
+          enum:
+            - PAYMENT
+            - DEBT_RECOVERY
+            - NONE
+          example: PAYMENT
+          type: string
+      required:
+        - method
+        - requiredAction
+      type: object
+    ListNotification:
+      description: List event notification sent to the merchant from Vayapay in case
+        a card is added/removed from/to deny/concession list
+      example:
+        requestId: bl-request-1
+        action: null
+        message: Added by merchant
+        listType: null
+        card:
+          sequenceNumber: 1
+          paymentAccountReference: 500103DMKZ9VHG9ILSR8I6SL2IZ5R
+          paymentCardReference: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          travelerAccountReference: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          fundingPaymentCardReference: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          maskedPan: maskedPan
+          scheme: null
+          paymentApp: Apple Pay
+          ntsToken: ntsToken
+          mediaType: PAYMENT_TOKEN
+          expiry: "2611"
+      properties:
+        requestId:
+          description: Id of the list management request sent by the merchant
+          example: bl-request-1
+          type: string
+        action:
+          $ref: '#/components/schemas/ListAction'
+        listType:
+          $ref: '#/components/schemas/ListType'
+        card:
+          $ref: '#/components/schemas/CardInformation'
+        message:
+          description: Additional information for this notification
+          example: Added by merchant
+          type: string
+      required:
+        - action
+        - card
+        - listType
+      type: object
+    CardScheme:
+      description: Card scheme codes
+      enum:
+        - VISA
+        - MASTERCARD
+        - BANK_AXEPT
+        - MAESTRO
+        - AMEX
+      type: string
+    HealthCheckOutcome:
+      description: |
+        * `ISSUER_APPROVED` => Healthcheck is done and approved,
+        * `ISSUER_DECLINED_TEMPORARY` => Healthcheck is done and denied by the card issuer due to temporary card-related issues such as insufficient funds to cover the requested amount,
+        * `ISSUER_DECLINED_PERMANENT` => Health check is done and denied by the card issuer due to permanent card-related issues such as the card having been reported as stolen, response code is sent in this case,
+        * `NOT_NEEDED` => Healthcheck is not executed because of the configuration (Merchant business rules),
+        * `NOT_APPLICABLE` => Healthcheck is not supported by the card scheme,
+        * `TEMPORARY_ENVIRONMENTAL_FAILURE` => Healthcheck could not be completed because of temporary system errors/outage, for example the acquirer or issuer being unreachable,
+        * `DEBT_RECOVERY_IN_PROGRESS` => Debt recovery is in progress for this card
+      enum:
+        - ISSUER_APPROVED
+        - ISSUER_DECLINED_TEMPORARY
+        - ISSUER_DECLINED_PERMANENT
+        - NOT_NEEDED
+        - NOT_APPLICABLE
+        - TEMPORARY_ENVIRONMENTAL_FAILURE
+        - DEBT_RECOVERY_IN_PROGRESS
+      type: string
+    ListAction:
+      description: "List action: \n\n* `ADD` - Add record to list, \n* `REMOVE` -\
+        \ Remove record from list, \n* `CHECK` - Checks if the identifiers are in\
+        \ the list already\n"
+      enum:
+        - ADD
+        - REMOVE
+        - CHECK
+      type: string
+    ListType:
+      description: "List type\n\n* `DENY_LIST` => Denied cards, \n* `CONCESSION_LIST`\
+        \ => Discounted cards\n"
+      enum:
+        - DENY_LIST
+        - CONCESSION_LIST
+      type: string

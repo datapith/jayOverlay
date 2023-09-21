@@ -1,0 +1,17 @@
+{
+  "overlay": "0.1.0",
+  "info": {
+    "title": "Adding description overlay",
+    "version": "1.0.0"
+  },
+  "extends": "src/test/resources/openapi/empty.yml",
+  "actions": [
+    {
+      "target": "info",
+      "description": "Adding description to openapi specification",
+      "update": {
+        "description": "Added description"
+      }
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+.idea
+.terraform
+out
+build
+.gradle
+*.iml
+private
+src-gen
