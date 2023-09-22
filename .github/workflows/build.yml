@@ -29,13 +29,16 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     name: Publish Project
+    # Main branch only
+    if: github.ref_name == 'main'
     needs: build
 
     steps:
 
+      - name: Checkout code
+        uses: actions/checkout@v3
+
       - name: Publish gradle plugin(s)
-        # Main branch only
-        if: github.ref_name == 'main'
         uses: gradle/gradle-build-action@67421db6bd0bf253fb4bd25b31ebb98943c375e1
         with:
           arguments: publishPlugins
