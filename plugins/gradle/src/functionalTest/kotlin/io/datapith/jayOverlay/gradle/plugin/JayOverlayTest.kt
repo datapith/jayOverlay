@@ -114,9 +114,10 @@ class JayOverlayTest {
                 "applyOverlay"
             )
             .build()
+        println(outputBuild.output)
 
         // Get overlay file and compare to expected result
-        val result = Paths.get(testProjectDir.toString(), targetFile.name).toFile().readText()
+        val result = Paths.get(testProjectDir.root.path,"result", targetFile.name).toFile().readText()
         assertJson(result).isEqualToYaml(
             """
                 openapi: "3.0.0"
@@ -132,7 +133,5 @@ class JayOverlayTest {
                                     description: Successful response                            
             """
         )
-
-        println(outputBuild.output)
     }
 }
