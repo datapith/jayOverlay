@@ -41,3 +41,4 @@ Feature: Apply overlays to YAML
       "termsOfService": "http://example.com/terms/"
     paths: {}
     """
+

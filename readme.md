@@ -52,7 +52,7 @@ Add the overlay plugin to your gradle build
 
 ```
 plugins {
-    id("io.datapith.jayOverlay").version("0.1.0")
+    id("io.datapith.jayOverlay").version("<<latest>>")
 }
 
 jayOverlay {
