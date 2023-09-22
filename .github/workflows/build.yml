@@ -21,7 +21,19 @@ jobs:
           distribution: 'temurin'
           java-version: 17
 
-      - name: Build with Gralde
+      - name: Build with Gradle
         uses: gradle/gradle-build-action@67421db6bd0bf253fb4bd25b31ebb98943c375e1
         with:
           arguments: clean build
+
+  publish:
+    runs-on: ubuntu-latest
+    name: Publish Project
+    needs: build
+
+      - name: Publish gradle plugin(s)
+        # Main branch only
+        if: github.ref_name == 'main'
+        uses: gradle/gradle-build-action@67421db6bd0bf253fb4bd25b31ebb98943c375e1
+        with:
+          arguments: publishPlugins
