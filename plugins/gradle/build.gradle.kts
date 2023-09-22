@@ -46,6 +46,7 @@ task<Test>("functionalTest") {
         exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
     }
 }
+
 gradlePlugin {
     plugins {
         website.set(property("WEBSITE").toString())
@@ -53,7 +54,7 @@ gradlePlugin {
         create(property("ID").toString()) {
             id = property("ID").toString()
             implementationClass = property("IMPLEMENTATION_CLASS").toString()
-            version = version
+            //version = project.version
             displayName = property("DISPLAY_NAME").toString()
             description = property("DESCRIPTION").toString()
             tags.set(

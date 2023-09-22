@@ -21,7 +21,6 @@ allprojects {
 }
 
 group = "io.datapit.jayOverlay"
-version = "0.1.0"
 
 subprojects {
 
