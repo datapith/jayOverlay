@@ -5,6 +5,7 @@ val junitVersion: String by project
 val kotlinLoggingVersion: String by project
 val logbackVersion: String by project
 val mockkVersion: String by project
+val webcompereVersion: String by project
 
 plugins {
     jacoco
@@ -21,7 +22,6 @@ allprojects {
 }
 
 group = "io.datapit.jayOverlay"
-version = "0.1.0"
 
 subprojects {
 
@@ -60,6 +60,9 @@ subprojects {
         testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
 
         testImplementation("io.mockk:mockk:$mockkVersion")
+
+        // Asserts for YAML and JSON
+        testImplementation("uk.org.webcompere:model-assert:$webcompereVersion")
 
         // Dependencies for module tests
         testImplementation("io.cucumber:cucumber-core:$cucumberVersion")

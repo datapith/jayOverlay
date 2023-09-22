@@ -1,4 +1,7 @@
-val kamlVersion: String by project
+val commonsLangVersion: String by project
+val jacksonVersion: String by project
+val jmeshpathVersion: String by project
+val kotlinxSerializationVersion: String by project
 val yamlPathVersion: String by project
 
 plugins {
@@ -6,15 +9,13 @@ plugins {
 }
 
 dependencies {
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.15.2")
-    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.15.2")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:$kotlinxSerializationVersion")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
+    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:$jacksonVersion")
 
-    implementation("io.burt:jmespath-jackson:0.5.1")
+    implementation("io.burt:jmespath-jackson:$jmeshpathVersion")
 
-    implementation("org.apache.commons:commons-lang3:3.13.0")
-
-    testImplementation("uk.org.webcompere:model-assert:1.0.0")
+    implementation("org.apache.commons:commons-lang3:$commonsLangVersion")
 }
 
 sourceSets {
