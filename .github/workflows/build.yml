@@ -5,40 +5,49 @@ on:
     branches: [ '*' ]
 
 jobs:
+
   build:
 
     runs-on: ubuntu-latest
     name: Build Project
 
     steps:
-
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Set up JDK 17
-        uses: actions/setup-java@v3
-        with:
-          distribution: 'temurin'
-          java-version: 17
+      - uses: ./.github/workflows/setup-env
+#      - name: Checkout code
+#        uses: actions/checkout@v3
+#
+#      - name: Set up JDK 11
+#        uses: actions/setup-java@v3
+#        with:
+#          distribution: 'temurin'
+#          java-version: 11
 
       - name: Build with Gradle
         uses: gradle/gradle-build-action@67421db6bd0bf253fb4bd25b31ebb98943c375e1
         with:
           arguments: clean build
 
-  publish:
-    runs-on: ubuntu-latest
-    name: Publish Project
-    # Main branch only
-    if: github.ref_name == 'main'
-    needs: build
-
-    steps:
-
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Publish gradle plugin(s)
-        uses: gradle/gradle-build-action@67421db6bd0bf253fb4bd25b31ebb98943c375e1
-        with:
-          arguments: publishPlugins
+# Temporary disable until we have release plugin by which we can automatically upgrade version when publishing
+# https://github.com/researchgate/gradle-release
+#  publish:
+#    runs-on: ubuntu-latest
+#    name: Publish Project
+#    # Main branch only
+#    if: github.ref_name == 'main'
+#    needs: build
+#
+#    steps:
+#
+#      - name: Checkout code
+#        uses: actions/checkout@v3
+#
+#      - name: Set up JDK 11
+#        uses: actions/setup-java@v3
+#        with:
+#          distribution: 'temurin'
+#          java-version: 11
+#
+#      - name: Publish gradle plugin(s)
+#        uses: gradle/gradle-build-action@67421db6bd0bf253fb4bd25b31ebb98943c375e1
+#        with:
+#          arguments: publishPlugins
