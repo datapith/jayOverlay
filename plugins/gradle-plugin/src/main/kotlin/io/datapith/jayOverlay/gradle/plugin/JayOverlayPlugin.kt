@@ -12,7 +12,7 @@ class JayOverlayPlugin: Plugin<Project> {
     /**
      * Apply this plugin to the given project.
      *
-     * @param target The target object
+     * @param project The target project
      */
     override fun apply(project: Project) {
         // Create extension for plugin
