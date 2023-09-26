@@ -4,11 +4,13 @@ plugins {
     id("com.gradle.plugin-publish")
 }
 
+description = "Gradle plugin of jayOverlay"
+
 dependencies {
     implementation(kotlin("stdlib"))
     implementation(gradleApi())
 
-    implementation(project(":core"))
+    implementation(project(":${rootProject.name}-core"))
 
     testImplementation("uk.org.webcompere:model-assert:1.0.0")
 }

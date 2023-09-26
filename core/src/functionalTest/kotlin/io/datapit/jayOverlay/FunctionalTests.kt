@@ -7,8 +7,7 @@ import org.junit.runner.RunWith
 @RunWith(Cucumber::class)
 @CucumberOptions(
     plugin = ["pretty", "html:build/test-results/moduleTest/core.html"],
-    features = ["src/moduleTest/features"],
+    features = ["src/functionalTest/features"],
     glue = ["io.datapit.jayOverlay.steps"]
 )
-class ModuleTests {
-}
+class FunctionalTests

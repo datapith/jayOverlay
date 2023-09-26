@@ -352,33 +352,56 @@ class OverlayTest {
     fun `overlay should apply multiple actions to yaml file`() {
         // Given an open API specification without description
         val targetDocument =  """
-                openapi: "3.0.0"
-                info:
-                  version: "1.0.0"
-                  title: "API"
-                paths: {}            
+            openapi: 3.0.0
+            info:
+              title: "Example JayOverlay"
+              version: 1.0.0
+            paths:
+              /test:
+                post:
+                  requestBody:
+                    required: true
+                  responses:
+                    '200':
+                      description: "Success"
+                    '400':
+                      description: "Invalid request"
+                    '500':
+                      description: "Internal Error"
             """.trimIndent()
         // And overlay by which we add description and termsOfService
         val overlay = """
                 {
                     "overlay": "0.1.0",
                     "info": {
-                        "title": "Adding information overlay",
+                        "title": "Adding Body",
                         "version": "1.0.0"
                     },
                     "actions": [
                         {
-                            "target": "info",
-                            "description": "Adding description",
+                            "target": "paths.\"/test\".post.requestBody",
                             "update": {
-                                "description": "Added description" 
-                            }
-                        },
-                        {                                             
-                            "target": "info",
-                            "description": "Adding termsOfService",
-                            "update": {
-                                "termsOfService": "http://example.com/terms/"
+                              "content": {
+                                "application/json": {
+                                  "schema": {
+                                    "type": "object",
+                                    "required": [
+                                      "firstName",
+                                      "lastName"
+                                    ],
+                                    "properties": {
+                                      "firstName": {
+                                        "type": "string",
+                                        "nullable": false
+                                      },
+                                      "lastName": {
+                                        "type": "string",
+                                        "nullable": false
+                                      }
+                                    }
+                                  }    
+                                }
+                              }
                             }
                         }    
                     ]
@@ -392,13 +415,36 @@ class OverlayTest {
         val returnedYaml = objectMapper.readTree(result)
         assertJson(returnedYaml).isEqualToYaml(
             """
-                openapi: "3.0.0"
-                info:
-                  version: "1.0.0"
-                  title: "API"
-                  description: "Added description"
-                  "termsOfService": "http://example.com/terms/"
-                paths: {}            
+            openapi: "3.0.0"
+            info:
+              title: "Example JayOverlay"
+              version: "1.0.0"
+            paths:
+              /test:
+                post:
+                  requestBody:
+                    required: true
+                    content:
+                      application/json:
+                        schema:
+                          type: "object"
+                          required:
+                          - "firstName"
+                          - "lastName"
+                          properties:
+                            firstName:
+                              type: "string"
+                              nullable: false
+                            lastName:
+                              type: "string"
+                              nullable: false
+                  responses:
+                    "200":
+                      description: "Success"
+                    "400":
+                      description: "Invalid request"
+                    "500":
+                      description: "Internal Error"
             """.trimIndent()
         )
     }

@@ -1,6 +1,7 @@
 package io.datapit.jayOverlay
 
 import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.burt.jmespath.jackson.JacksonRuntime
 import kotlinx.serialization.Contextual
@@ -24,7 +25,7 @@ data class Action(
     val target: String,
     val description: String? = null,
     val update: Map<String, @Contextual Any>? = null,
-    val remove: Boolean = false
+    val remove: Boolean = false,
 ) {
     private val logger = KotlinLogging.logger {}
 
@@ -107,10 +108,28 @@ data class Action(
                 val objectNode = targetObject.putObject(name)
                 processUpdates(objectNode, value as Map<String, Any>)
             }
+            is List<*> -> {
+                val objectNode = targetObject.putArray(name)
+                setProperty(objectNode, value)
+            }
+            is Boolean -> targetObject.put(name, value)
             is String -> targetObject.put(name, value)
             else -> throw UnsupportedOperationException(
                 "Detected unsupported type (${value::class}) while setting property $name in $targetObject"
             )
+        }
+    }
+
+    private fun setProperty(targetObject: ArrayNode, values: List<*>) {
+        values.forEach {
+            requireNotNull(it) { "Can't add null to array" }
+            when (it) {
+                // TODO: support Map so that we can also add objects in array
+                is String -> targetObject.add(it)
+                else -> throw UnsupportedOperationException(
+                    "Detected unsupported type (${it::class.java}) while adding value to array"
+                )
+            }
         }
     }
 }
