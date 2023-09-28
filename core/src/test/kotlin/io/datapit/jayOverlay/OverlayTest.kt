@@ -184,6 +184,47 @@ class OverlayTest {
     }
 
     @Test
+    fun `overlay should add integer to yaml file`() {
+        // Given an yaml document
+        val targetDocument = """
+            example:
+              key: "key"           
+            """.trimIndent()
+
+        // And overlay by which we add entry with integer value
+        val overlay = """
+                {
+                    "overlay": "0.1.0",
+                    "info": {
+                    "title": "Adding integer by overlay",
+                    "version": "1.0.0"
+                },
+                    "actions": [
+                        {
+                            "target": "example",
+                            "update": {
+                                "value": 0
+                            }
+                        }    
+                    ]
+                }
+        """.trim()
+
+        // When applying overlay to target document
+        val result = applyOverlay(overlay, targetDocument)
+
+        // Then result of overlay is that description is added
+        val returnedYaml = objectMapper.readTree(result)
+        assertJson(returnedYaml).isEqualToYaml(
+            """
+                example:
+                  key: "key"
+                  value: 0         
+            """.trimIndent()
+        )
+    }
+
+    @Test
     fun `overlay should add nested Nodes to yaml file`() {
         // Given an open API specification without description
         val targetDocument = """
@@ -352,56 +393,33 @@ class OverlayTest {
     fun `overlay should apply multiple actions to yaml file`() {
         // Given an open API specification without description
         val targetDocument =  """
-            openapi: 3.0.0
-            info:
-              title: "Example JayOverlay"
-              version: 1.0.0
-            paths:
-              /test:
-                post:
-                  requestBody:
-                    required: true
-                  responses:
-                    '200':
-                      description: "Success"
-                    '400':
-                      description: "Invalid request"
-                    '500':
-                      description: "Internal Error"
+                openapi: "3.0.0"
+                info:
+                  version: "1.0.0"
+                  title: "API"
+                paths: {}            
             """.trimIndent()
         // And overlay by which we add description and termsOfService
         val overlay = """
                 {
                     "overlay": "0.1.0",
                     "info": {
-                        "title": "Adding Body",
+                        "title": "Adding information overlay",
                         "version": "1.0.0"
                     },
                     "actions": [
                         {
-                            "target": "paths.\"/test\".post.requestBody",
+                            "target": "info",
+                            "description": "Adding description",
                             "update": {
-                              "content": {
-                                "application/json": {
-                                  "schema": {
-                                    "type": "object",
-                                    "required": [
-                                      "firstName",
-                                      "lastName"
-                                    ],
-                                    "properties": {
-                                      "firstName": {
-                                        "type": "string",
-                                        "nullable": false
-                                      },
-                                      "lastName": {
-                                        "type": "string",
-                                        "nullable": false
-                                      }
-                                    }
-                                  }    
-                                }
-                              }
+                                "description": "Added description" 
+                            }
+                        },
+                        {                                             
+                            "target": "info",
+                            "description": "Adding termsOfService",
+                            "update": {
+                                "termsOfService": "http://example.com/terms/"
                             }
                         }    
                     ]
@@ -415,36 +433,13 @@ class OverlayTest {
         val returnedYaml = objectMapper.readTree(result)
         assertJson(returnedYaml).isEqualToYaml(
             """
-            openapi: "3.0.0"
-            info:
-              title: "Example JayOverlay"
-              version: "1.0.0"
-            paths:
-              /test:
-                post:
-                  requestBody:
-                    required: true
-                    content:
-                      application/json:
-                        schema:
-                          type: "object"
-                          required:
-                          - "firstName"
-                          - "lastName"
-                          properties:
-                            firstName:
-                              type: "string"
-                              nullable: false
-                            lastName:
-                              type: "string"
-                              nullable: false
-                  responses:
-                    "200":
-                      description: "Success"
-                    "400":
-                      description: "Invalid request"
-                    "500":
-                      description: "Internal Error"
+                openapi: "3.0.0"
+                info:
+                  version: "1.0.0"
+                  title: "API"
+                  description: "Added description"
+                  "termsOfService": "http://example.com/terms/"
+                paths: {}            
             """.trimIndent()
         )
     }

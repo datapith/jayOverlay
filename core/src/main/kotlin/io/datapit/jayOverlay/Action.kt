@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ArrayNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import io.burt.jmespath.jackson.JacksonRuntime
+import java.math.BigDecimal
+import java.math.BigInteger
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 import mu.two.KotlinLogging
@@ -53,9 +55,20 @@ data class Action(
                 throw Exception("Couldn't remove $targetObject from $parent")
             }
         } else {
-            require(targetObject is ObjectNode) { "Only object nodes can be updated" }
+//            when(targetObject) {
+//                is ArrayNode -> {
+//                    targetObject.forEach {
+//                        require(it is ObjectNode) { "Only object nodes can be updated" }
+//                        logger.info { "Applying updates to $targetObject" }
+//                        processUpdates(it, update)
+//                    }
+//                }
+//                else -> {
+            //require((targetObject is ObjectNode) or (targetObject is ArrayNode)) { "Only object node(s) can be updated" }
             logger.info { "Applying updates to $targetObject" }
             processUpdates(targetObject, update)
+//                }
+//            }
         }
 
         return targetDocument
@@ -90,6 +103,21 @@ data class Action(
         return false
     }
 
+    private fun processUpdates(targetObject: JsonNode, update: Map<String, Any>?) {
+        when(targetObject) {
+            is ArrayNode -> processUpdates(targetObject, update)
+            is ObjectNode -> processUpdates(targetObject, update)
+            else -> throw IllegalArgumentException("Only object nodes can be updated")
+        }
+    }
+
+    private fun processUpdates(targetObjects: ArrayNode, properties: Map<String, Any>?) {
+        targetObjects.forEach {
+            require(it is ObjectNode) { "Only object nodes can be updated" }
+            processUpdates(it, properties)
+        }
+    }
+
     private fun processUpdates(targetObject: ObjectNode, properties: Map<String, Any>?) {
         properties?.forEach {
             if (targetObject.has(it.key)) {
@@ -113,6 +141,14 @@ data class Action(
                 setProperty(objectNode, value)
             }
             is Boolean -> targetObject.put(name, value)
+            is Short -> targetObject.put(name, value)
+            is Int -> targetObject.put(name,value)
+            is Long -> targetObject.put(name, value)
+            is BigInteger -> targetObject.put(name, value)
+            is Float -> targetObject.put(name, value)
+            is Double -> targetObject.put(name,value)
+            is BigDecimal -> targetObject.put(name, value)
+            is ByteArray -> targetObject.put(name, value)
             is String -> targetObject.put(name, value)
             else -> throw UnsupportedOperationException(
                 "Detected unsupported type (${value::class}) while setting property $name in $targetObject"
@@ -124,7 +160,11 @@ data class Action(
         values.forEach {
             requireNotNull(it) { "Can't add null to array" }
             when (it) {
-                // TODO: support Map so that we can also add objects in array
+                is Map<*, *> -> {
+                    it.forEach { key, value ->
+                        setProperty(targetObject.addObject(), key as String, value!!)
+                    }
+                }
                 is String -> targetObject.add(it)
                 else -> throw UnsupportedOperationException(
                     "Detected unsupported type (${it::class.java}) while adding value to array"
