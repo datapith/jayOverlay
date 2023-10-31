@@ -64,14 +64,14 @@ jayOverlay {
 
 ## Overlay document
 
-An overlay document contains an ordered list of Action Objects that are to be applied to the target document. Each Action Object has a target property and a modifier type (update or remove). The target property is a JSONPath query expression that identifies the elements of the target document to be updated and the modifier determines the change.
+An overlay document contains an ordered list of Action Objects that are to be applied to the target document. Each Action Object has a target property and a modifier type (update or remove). The target property is a [JSONPath](https://datatracker.ietf.org/wg/jsonpath/documents/) query expression that identifies the elements of the target document to be updated and the modifier determines the change.
 
-Field Name | Type | Description
----|:---:|---
-<a name="overlayVersion"></a>overlay | `string` | **REQUIRED**. This string MUST be the [version number](#versions) of the Overlay Specification that the Overlay document uses. The `overlay` field SHOULD be used by tooling to interpret the Overlay document.
-<a name="overlayInfo"></a>info | [Info Object](#infoObject) | **REQUIRED**. Provides metadata about the Overlay. The metadata MAY be used by tooling as required.
-<a name="overlayExtends"></a> extends | `string` | URL to the target document (such as an OpenAPI document) this overlay applies to. This MUST be in the form of a URL.
-<a name="overlayActions"></a>actions | [[Action Object](#actionObject)] | **REQUIRED** An ordered list of actions to be applied to the target document. The array MUST contain at least one value.
+Field Name |              Type              | Description
+---|:------------------------------:|---
+<a name="overlayVersion"></a>overlay |            `string`            | **REQUIRED**. This string MUST be the [version number](#versions) of the Overlay Specification that the Overlay document uses. The `overlay` field SHOULD be used by tooling to interpret the Overlay document.
+<a name="overlayInfo"></a>info |   [Info Object](#infoObject)   | **REQUIRED**. Provides metadata about the Overlay. The metadata MAY be used by tooling as required.
+<a name="overlayExtends"></a> extends |            `string`            | URL to the target document (such as an OpenAPI document) this overlay applies to. This MUST be in the form of a URL.
+<a name="overlayActions"></a>actions | [Action Object](#actionObject) | **REQUIRED** An ordered list of actions to be applied to the target document. The array MUST contain at least one value.
 
 ### <a name="infoObject"></a>Info Object
 
@@ -89,7 +89,7 @@ This object represents one or more changes to be applied to the target document 
 
 Field Name | Type | Description
 ---|:---:|---
-<a name="actionTarget"></a>target | `string` | **REQUIRED** A JSONPath query expression referencing the target objects in the target document.
+<a name="actionTarget"></a>target | `string` | **REQUIRED** A [JSONPath](https://datatracker.ietf.org/wg/jsonpath/documents/) query expression referencing the target objects in the target document.
 <a name="actionDescription"></a>description | `string` | A description of the action. [CommonMark syntax](https://spec.commonmark.org/) MAY be used for rich text representation.
 <a name="actionUpdate"></a>update | Any | An object with the properties and values to be merged with the object(s) referenced by the `target`. This property has no impact if `remove` property is `true`.
 <a name="actionRemove"></a>remove | `boolean` | A boolean value that indicates that the target object is to be removed from the the map or array it is contained in. The default value is `false`.
