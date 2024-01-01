@@ -10,7 +10,7 @@ dependencies {
 
     implementation(project(":core"))
 
-    testImplementation("uk.org.webcompere:model-assert:1.0.0")
+    testImplementation("uk.org.webcompere:model-assert:1.0.2")
 }
 
 sourceSets {
